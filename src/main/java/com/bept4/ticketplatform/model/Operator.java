@@ -19,7 +19,7 @@ public class Operator {
 
     @NotNull(message = "Name cannot be null")
     @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
-    private String name;
+    private String username;
 
     @NotNull(message = "Email cannot be null")
     @Email(message = "Email should be valid")
@@ -36,12 +36,12 @@ public class Operator {
         this.id = id;
     }
 
-    public String getName() {
-        return this.name;
+    public String getUsername() {
+        return this.username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getEmail() {
