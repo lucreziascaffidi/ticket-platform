@@ -10,7 +10,6 @@ import com.bept4.ticketplatform.model.Operator;
 import com.bept4.ticketplatform.model.Ticket;
 import com.bept4.ticketplatform.repository.TicketRepository;
 
-import ch.qos.logback.core.status.Status;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -37,7 +36,7 @@ public class TicketService {
     }
 
     // Filtra i ticket per stato
-    public List<Ticket> getTicketsByStatus(Status status) {
+    public List<Ticket> getTicketsByStatus(com.bept4.ticketplatform.model.Status status) {
         return ticketRepository.findByStatus(status);
     }
 

@@ -32,6 +32,11 @@ public class OperatorService {
         return operatorRepository.findByEmail(email);
     }
 
+    // Ottieni un operatore per id
+    public Optional<Operator> getOperatorById(Integer id) {
+        return operatorRepository.findById(id);
+    }
+
     // Aggiorna i dati di un operatore
     @Transactional
     public Operator updateOperator(Operator operator) {
