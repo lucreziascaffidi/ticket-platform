@@ -1,4 +1,4 @@
-package com.bept4.ticket_platform;
+package com.bept4.ticketplatform;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
