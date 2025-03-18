@@ -1,9 +1,9 @@
-package com.bept4.ticket_platform;
+package com.bept4.ticketplatform;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest(classes = TicketPlatformApplication.class)
 class TicketPlatformApplicationTests {
 
 	@Test

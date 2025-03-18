@@ -1,6 +1,5 @@
 package com.bept4.ticketplatform.controller;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bept4.ticketplatform.exception.ResourceNotFoundException;
+import com.bept4.ticketplatform.exception.ValidationException;
 import com.bept4.ticketplatform.model.Operator;
 import com.bept4.ticketplatform.model.Ticket;
 import com.bept4.ticketplatform.service.OperatorService;
@@ -37,8 +38,12 @@ public class TicketController {
     // Crea un nuovo ticket
     @PostMapping
     public ResponseEntity<Ticket> createTicket(@Valid @RequestBody Ticket ticket) {
-        Ticket createdTicket = ticketService.createTicket(ticket);
-        return ResponseEntity.ok(createdTicket);
+        try {
+            Ticket createdTicket = ticketService.createTicket(ticket);
+            return ResponseEntity.ok(createdTicket);
+        } catch (Exception e) {
+            throw new ValidationException("Errore nella creazione del ticket");
+        }
     }
 
     // Ottieni tutti i ticket
@@ -50,28 +55,41 @@ public class TicketController {
     // Cerca ticket per titolo
     @GetMapping("/search")
     public List<Ticket> getTicketsByTitle(@RequestParam String title) {
-        return ticketService.getTicketsByTitle(title);
+        List<Ticket> tickets = ticketService.getTicketsByTitle(title);
+        if (tickets.isEmpty()) {
+            throw new ResourceNotFoundException("Nessun ticket trovato con il titolo " + title);
+        }
+        return tickets;
     }
 
     // Filtra ticket per stato
     @GetMapping("/status")
     public List<Ticket> getTicketsByStatus(@RequestParam String status) {
-        return ticketService.getTicketsByStatus(Status.valueOf(status.toUpperCase())); // Converte la stringa in Status
+        List<Ticket> tickets = ticketService.getTicketsByStatus(Status.valueOf(status.toUpperCase()));
+        if (tickets.isEmpty()) {
+            throw new ResourceNotFoundException("Nessun ticket trovato con lo stato " + status);
+        }
+        return tickets;
     }
 
     // Filtra ticket per operatore
     @GetMapping("/operator")
     public List<Ticket> getTicketsByOperator(@RequestParam Integer operatorId) {
-        // Supponiamo che tu abbia un metodo per ottenere l'operatore per ID
         Optional<Operator> operator = operatorService.getOperatorById(operatorId);
-        return operator.map(ticketService::getTicketsByOperator).orElseGet(Collections::emptyList);
+        if (operator.isEmpty()) {
+            throw new ResourceNotFoundException("Operatore con ID " + operatorId + " non trovato");
+        }
+        return ticketService.getTicketsByOperator(operator.get());
     }
 
     // Trova ticket per ID
     @GetMapping("/{id}")
     public ResponseEntity<Ticket> getTicketById(@PathVariable Integer id) {
         Optional<Ticket> ticket = ticketService.getTicketById(id);
-        return ticket.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        if (ticket.isEmpty()) {
+            throw new ResourceNotFoundException("Ticket con ID " + id + " non trovato");
+        }
+        return ResponseEntity.ok(ticket.get());
     }
 
     // Aggiorna un ticket
@@ -79,13 +97,16 @@ public class TicketController {
     public ResponseEntity<Ticket> updateTicket(@PathVariable Integer id, @Valid @RequestBody Ticket ticket) {
         ticket.setId(id);
         Ticket updatedTicket = ticketService.updateTicket(ticket);
+        if (updatedTicket == null) {
+            throw new ResourceNotFoundException("Ticket con ID " + id + " non trovato per l'aggiornamento");
+        }
         return ResponseEntity.ok(updatedTicket);
     }
 
     // Elimina un ticket
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTicket(@PathVariable Integer id) {
-        ticketService.deleteTicket(id);
+        ticketService.deleteTicket(id); // Non assegnare il risultato a una variabile
         return ResponseEntity.noContent().build();
     }
 }

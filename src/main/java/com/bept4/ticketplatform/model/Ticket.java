@@ -3,8 +3,6 @@ package com.bept4.ticketplatform.model;
 import java.time.LocalDateTime;
 
 import org.antlr.v4.runtime.atn.SemanticContext.Operator;
-
-import ch.qos.logback.core.status.Status;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

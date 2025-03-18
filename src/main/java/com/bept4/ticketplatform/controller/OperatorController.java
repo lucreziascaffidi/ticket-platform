@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bept4.ticketplatform.exception.ResourceNotFoundException;
+import com.bept4.ticketplatform.exception.ValidationException;
 import com.bept4.ticketplatform.model.Operator;
 import com.bept4.ticketplatform.service.OperatorService;
 
@@ -28,15 +30,22 @@ public class OperatorController {
     // Crea un nuovo operatore
     @PostMapping
     public ResponseEntity<Operator> createOperator(@Valid @RequestBody Operator operator) {
-        Operator createdOperator = operatorService.createOperator(operator);
-        return ResponseEntity.ok(createdOperator);
+        try {
+            Operator createdOperator = operatorService.createOperator(operator);
+            return ResponseEntity.ok(createdOperator);
+        } catch (Exception e) {
+            throw new ValidationException("Errore nella creazione dell'operatore");
+        }
     }
 
     // Ottieni un operatore per username
     @GetMapping("/{username}")
     public ResponseEntity<Operator> getOperatorByUsername(@PathVariable String username) {
         Optional<Operator> operator = operatorService.getOperatorByUsername(username);
-        return operator.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        if (operator.isEmpty()) {
+            throw new ResourceNotFoundException("Operatore con username " + username + " non trovato");
+        }
+        return ResponseEntity.ok(operator.get());
     }
 
     // Aggiorna un operatore
@@ -44,13 +53,16 @@ public class OperatorController {
     public ResponseEntity<Operator> updateOperator(@PathVariable Integer id, @Valid @RequestBody Operator operator) {
         operator.setId(id);
         Operator updatedOperator = operatorService.updateOperator(operator);
+        if (updatedOperator == null) {
+            throw new ResourceNotFoundException("Operatore con ID " + id + " non trovato per l'aggiornamento");
+        }
         return ResponseEntity.ok(updatedOperator);
     }
 
     // Elimina un operatore
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOperator(@PathVariable Integer id) {
-        operatorService.deleteOperator(id);
+        operatorService.deleteOperator(id); // Non assegnare il risultato a una variabile
         return ResponseEntity.noContent().build();
     }
 }
