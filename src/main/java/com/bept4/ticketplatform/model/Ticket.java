@@ -2,13 +2,13 @@ package com.bept4.ticketplatform.model;
 
 import java.time.LocalDateTime;
 
-import org.antlr.v4.runtime.atn.SemanticContext.Operator;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
@@ -33,6 +33,7 @@ public class Ticket {
     private LocalDateTime creationDate;
 
     @ManyToOne
+    @JoinColumn(name = "operator_id", nullable = false)
     private Operator operator;
 
     @Enumerated(EnumType.STRING)

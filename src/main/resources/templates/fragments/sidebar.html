@@ -1,0 +1,38 @@
+<th:block th:fragment="sidebar">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+        <div class="position-sticky">
+            <!-- Hamburger Button for Mobile -->
+            <button class="btn btn-outline-primary d-md-none" type="button" id="sidebarToggle">
+                <span class="navbar-toggler-icon"></span> Menu
+            </button>
+            <!-- Sidebar content -->
+            <ul class="nav flex-column" id="sidebarMenu">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">
+                        <i class="bi bi-house-door"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Tickets
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-person"></i>
+                        Operators
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-gear"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</th:block>

@@ -1,0 +1,18 @@
+<th:block th:fragment="scripts">
+
+    <!-- Aggiungi il link a Popper.js e Bootstrap -->
+    <script th:src="@{/webjars/popper.js/2.11.7/umd/popper.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+
+    <!-- Script per il toggle della sidebar (Menu Hamburger) -->
+    <script>
+        document.getElementById("sidebarToggle").addEventListener("click", function () {
+            var sidebar = document.getElementById("sidebarMenu");
+            if (sidebar.style.display === "none" || sidebar.style.display === "") {
+                sidebar.style.display = "block"; // Mostra la sidebar
+            } else {
+                sidebar.style.display = "none"; // Nascondi la sidebar
+            }
+        });
+    </script>
+</th:block>

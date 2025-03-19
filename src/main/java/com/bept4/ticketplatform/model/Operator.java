@@ -1,9 +1,16 @@
 package com.bept4.ticketplatform.model;
 
+import java.util.Set;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -26,6 +33,17 @@ public class Operator {
     private String email;
 
     private boolean personalStatus;
+
+    @OneToMany(mappedBy = "operator")
+    private Set<Ticket> tickets;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "operator_roles", joinColumns = @JoinColumn(name = "operator_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Roles> roles;
+
+    public void setTickets(Set<Ticket> tickets) {
+        this.tickets = tickets;
+    }
 
     // Getters e Setters
     public Integer getId() {
@@ -58,6 +76,18 @@ public class Operator {
 
     public void setPersonalStatus(boolean personalStatus) {
         this.personalStatus = personalStatus;
+    }
+
+    public Set<Ticket> getTickets() {
+        return this.tickets;
+    }
+
+    public Set<Roles> getRoles() {
+        return this.roles;
+    }
+
+    public void setRoles(Set<Roles> roles) {
+        this.roles = roles;
     }
 
 }
