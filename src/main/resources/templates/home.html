@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Home</title>
+    <th:block th:replace="~{fragments/fragments :: head}"></th:block>
+</head>
+
+<body class="bg-light">
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="text-center">
+            <h2>Welcome, <span th:text="${operator.username}">Username</span>!</h2>
+            <p>You are successfully logged in!</p>
+            <a href="/logout" class="btn btn-dark">Logout</a>
+        </div>
+    </div>
+
+    <th:block th:replace="~{fragments/fragments :: scripts}"></th:block>
+</body>
+
+</html>

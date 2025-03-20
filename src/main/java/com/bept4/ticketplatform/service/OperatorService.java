@@ -3,6 +3,8 @@ package com.bept4.ticketplatform.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.bept4.ticketplatform.model.Operator;
@@ -19,6 +21,9 @@ public class OperatorService {
     // Crea un nuovo operatore
     @Transactional
     public Operator createOperator(Operator operator) {
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String encodedPassword = passwordEncoder.encode(operator.getPassword());
+        operator.setPassword(encodedPassword);
         return operatorRepository.save(operator);
     }
 
@@ -40,6 +45,11 @@ public class OperatorService {
     // Aggiorna i dati di un operatore
     @Transactional
     public Operator updateOperator(Operator operator) {
+        if (operator.getPassword() != null) {
+            PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            String encodedPassword = passwordEncoder.encode(operator.getPassword());
+            operator.setPassword(encodedPassword);
+        }
         return operatorRepository.save(operator);
     }
 

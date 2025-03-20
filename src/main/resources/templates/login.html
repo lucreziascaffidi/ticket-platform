@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Login</title>
+    <th:block th:replace="~{fragments/fragments :: head}"></th:block>
+</head>
+
+<body class="bg-light">
+
+    <div th:if="${param.logout}" class="alert alert-success mt-3 text-center" role="alert">
+        You have successfully logged out!
+    </div>
+
+    <div class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="row w-100">
+            <div class="col-lg-4 col-md-6 col-sm-8 mx-auto">
+                <div class="card shadow-sm">
+                    <div class="card-header text-center bg-dark text-white">
+                        <h4>Login</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Form di login -->
+                        <form th:action="@{/login}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" id="username" name="username" class="form-control" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" id="password" name="password" class="form-control" required />
+                            </div>
+                            <button type="submit" class="btn btn-dark w-100">Login</button>
+                        </form>
+
+                        <!-- Messaggio di errore -->
+                        <div th:if="${param.error}" class="alert alert-danger mt-3" role="alert">
+                            Username o password errati. Riprova.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block th:replace="~{fragments/fragments :: scripts}"></th:block>
+
+</body>
+
+</html>

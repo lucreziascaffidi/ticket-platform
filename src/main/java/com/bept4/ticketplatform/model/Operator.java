@@ -34,6 +34,9 @@ public class Operator {
 
     private boolean personalStatus;
 
+    @NotNull(message = "Password cannot be null")
+    private String password;
+
     @OneToMany(mappedBy = "operator")
     private Set<Ticket> tickets;
 
@@ -76,6 +79,14 @@ public class Operator {
 
     public void setPersonalStatus(boolean personalStatus) {
         this.personalStatus = personalStatus;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Set<Ticket> getTickets() {
