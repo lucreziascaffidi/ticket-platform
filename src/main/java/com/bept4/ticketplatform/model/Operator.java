@@ -37,6 +37,8 @@ public class Operator {
     @NotNull(message = "Password cannot be null")
     private String password;
 
+    private String profileImage;
+
     @OneToMany(mappedBy = "operator")
     private Set<Ticket> tickets;
 
@@ -99,6 +101,14 @@ public class Operator {
 
     public void setRoles(Set<Roles> roles) {
         this.roles = roles;
+    }
+
+    public String getProfileImage() {
+        return this.profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 
 }

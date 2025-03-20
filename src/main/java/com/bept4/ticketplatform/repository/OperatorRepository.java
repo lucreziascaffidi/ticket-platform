@@ -7,5 +7,5 @@ import java.util.Optional;
 public interface OperatorRepository extends JpaRepository<Operator, Integer> {
     Optional<Operator> findByUsername(String username);
 
-    Optional<Operator> findByEmail(String email); // Cerca un operatore per email
+    Optional<Operator> findByEmail(String email);
 }

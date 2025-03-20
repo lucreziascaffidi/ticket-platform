@@ -42,6 +42,14 @@ public class OperatorService {
         return operatorRepository.findById(id);
     }
 
+    public void updateProfileImage(String username, String profileImage) {
+        Optional<Operator> operator = operatorRepository.findByUsername(username);
+        if (operator.isPresent()) {
+            operator.get().setProfileImage(profileImage);
+            operatorRepository.save(operator.get());
+        }
+    }
+
     // Aggiorna i dati di un operatore
     @Transactional
     public Operator updateOperator(Operator operator) {
