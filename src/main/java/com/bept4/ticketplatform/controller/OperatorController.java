@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -30,21 +28,14 @@ public class OperatorController {
     @Autowired
     private TicketService ticketService;
 
-    // Mostra lista operatori
     @GetMapping
-    public String viewOperatorsIndex(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null)
+    public String viewOperatorsIndex(Model model) {
+        Operator loggedOperator = (Operator) model.getAttribute("loggedOperator");
+        Boolean isAdmin = (Boolean) model.getAttribute("isAdmin");
+
+        if (loggedOperator == null)
             return "redirect:/login";
-
-        Optional<Operator> loggedOperator = operatorService.getOperatorByUsername(userDetails.getUsername());
-        if (loggedOperator.isEmpty())
-            return "redirect:/login";
-
-        model.addAttribute("loggedOperator", loggedOperator.get());
-
-        boolean isAdmin = userDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (!isAdmin)
+        if (!Boolean.TRUE.equals(isAdmin))
             return "redirect:/operators/profile";
 
         List<Operator> sortedOperators = operatorService.getAllOperators().stream()
@@ -54,23 +45,16 @@ public class OperatorController {
                     return Boolean.compare(!aIsAdmin, !bIsAdmin);
                 }).toList();
 
-        model.addAttribute("admin", loggedOperator);
         model.addAttribute("allOperators", sortedOperators);
         return "operators/index";
     }
 
-    // Profilo dell'utente loggato
     @GetMapping("/profile")
-    public String getProfile(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null)
+    public String getProfile(Model model) {
+        Operator operator = (Operator) model.getAttribute("loggedOperator");
+        if (operator == null)
             return "redirect:/login";
 
-        Optional<Operator> loggedOperator = operatorService.getOperatorByUsername(userDetails.getUsername());
-        if (loggedOperator.isEmpty())
-            return "redirect:/login";
-
-        Operator operator = loggedOperator.get();
-        model.addAttribute("loggedOperator", operator);
         model.addAttribute("operator", operator);
         model.addAttribute("assignedTickets", ticketService.getTicketsByOperator(operator));
 
@@ -81,30 +65,20 @@ public class OperatorController {
         return "operators/show";
     }
 
-    // Visualizza un operatore per ID (solo admin o se stesso)
     @GetMapping("/{id}")
-    public String getOperatorById(@PathVariable Integer id, Model model,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null)
+    public String getOperatorById(@PathVariable Integer id, Model model) {
+        Operator viewer = (Operator) model.getAttribute("loggedOperator");
+        Boolean isAdmin = (Boolean) model.getAttribute("isAdmin");
+
+        if (viewer == null)
             return "redirect:/login";
-
-        Optional<Operator> loggedOperator = operatorService.getOperatorByUsername(userDetails.getUsername());
-        if (loggedOperator.isEmpty())
-            return "redirect:/login";
-
-        Operator viewer = loggedOperator.get();
-        model.addAttribute("loggedOperator", viewer);
-
-        boolean isAdmin = userDetails.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
-        model.addAttribute("isAdmin", isAdmin);
-
-        if (!isAdmin && !viewer.getId().equals(id)) {
+        if (!Boolean.TRUE.equals(isAdmin) && !viewer.getId().equals(id)) {
             return "redirect:/operators/profile";
         }
 
         Operator operator = operatorService.getOperatorById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Operator not found"));
+
         model.addAttribute("operator", operator);
         model.addAttribute("assignedTickets", ticketService.getTicketsByOperator(operator));
 
@@ -115,20 +89,14 @@ public class OperatorController {
         return "operators/show";
     }
 
-    // Cambia lo status dell'utente se non ha ticket attivi
     @PostMapping("/status/update")
     public String updateAvailability(@RequestParam Integer id,
             @RequestParam(required = false) Boolean available,
-            @AuthenticationPrincipal UserDetails userDetails,
+            Model model,
             RedirectAttributes redirectAttributes) {
 
-        Optional<Operator> loggedOperator = operatorService.getOperatorByUsername(userDetails.getUsername());
-        if (loggedOperator.isEmpty())
-            return "redirect:/login";
-
-        Operator current = loggedOperator.get();
-
-        if (!current.getId().equals(id)) {
+        Operator current = (Operator) model.getAttribute("loggedOperator");
+        if (current == null || !current.getId().equals(id)) {
             return "redirect:/operators/profile";
         }
 
@@ -149,19 +117,11 @@ public class OperatorController {
         return "redirect:/operators/profile";
     }
 
-    // Mostra il form di creazione di un nuovo operatore
     @GetMapping("/create")
-    public String createOperatorForm(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null)
-            return "redirect:/login";
-
-        boolean isAdmin = userDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (!isAdmin)
+    public String createOperatorForm(Model model) {
+        Boolean isAdmin = (Boolean) model.getAttribute("isAdmin");
+        if (!Boolean.TRUE.equals(isAdmin))
             return "redirect:/operators/profile";
-
-        Optional<Operator> loggedOperator = operatorService.getOperatorByUsername(userDetails.getUsername());
-        model.addAttribute("loggedOperator", loggedOperator.orElse(null));
 
         Operator operator = new Operator();
         operator.setRoles(new HashSet<>());
@@ -170,12 +130,10 @@ public class OperatorController {
         model.addAttribute("isAdmin", true);
         model.addAttribute("create", true);
         model.addAttribute("roles", List.of("ADMIN", "USER"));
-        model.addAttribute("loggedOperator", loggedOperator.orElse(null));
 
         return "operators/create-or-edit";
     }
 
-    // Salva nuovo operatore
     @PostMapping("/create")
     public String createOperator(@ModelAttribute Operator operator,
             @RequestParam String password,
@@ -195,23 +153,12 @@ public class OperatorController {
         return "redirect:/operators";
     }
 
-    // Apre il form precompilato con i dati dell’operatore
     @GetMapping("/edit/{id}")
-    public String editOperatorForm(@PathVariable Integer id, Model model,
-            @AuthenticationPrincipal UserDetails userDetails) {
+    public String editOperatorForm(@PathVariable Integer id, Model model) {
+        Operator viewer = (Operator) model.getAttribute("loggedOperator");
+        Boolean isAdmin = (Boolean) model.getAttribute("isAdmin");
 
-        if (userDetails == null)
-            return "redirect:/login";
-
-        Optional<Operator> loggedOperator = operatorService.getOperatorByUsername(userDetails.getUsername());
-        if (loggedOperator.isEmpty())
-            return "redirect:/login";
-
-        Operator viewer = loggedOperator.get();
-        boolean isAdmin = userDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        if (!isAdmin && !viewer.getId().equals(id)) {
+        if (viewer == null || (!Boolean.TRUE.equals(isAdmin) && !viewer.getId().equals(id))) {
             return "redirect:/operators/profile";
         }
 
@@ -228,7 +175,6 @@ public class OperatorController {
         model.addAttribute("operator", operator);
         model.addAttribute("create", false);
         model.addAttribute("canToggleStatus", !hasPendingTickets);
-        model.addAttribute("loggedOperator", viewer);
         model.addAttribute("isAdmin", isAdmin);
         model.addAttribute("roles", List.of("ADMIN", "USER"));
 
@@ -242,27 +188,20 @@ public class OperatorController {
         return "operators/create-or-edit";
     }
 
-    // Aggiorna le informazioni di un operatore esistente
     @PostMapping("/edit/{id}")
-    public String updateOperator(
-            @PathVariable Integer id,
+    public String updateOperator(@PathVariable Integer id,
             @ModelAttribute Operator operator,
             @RequestParam("password") String password,
             @RequestParam("imageFile") MultipartFile imageFile,
             @RequestParam(value = "role", required = false) String role,
-            @AuthenticationPrincipal UserDetails userDetails,
+            Model model,
             RedirectAttributes redirectAttributes) {
 
-        Optional<Operator> loggedOperator = operatorService.getOperatorByUsername(userDetails.getUsername());
-        if (loggedOperator.isEmpty())
-            return "redirect:/login";
+        Operator viewer = (Operator) model.getAttribute("loggedOperator");
+        Boolean isAdminAttr = (Boolean) model.getAttribute("isAdmin");
+        boolean isAdmin = Boolean.TRUE.equals(isAdminAttr); // Safe conversion
 
-        Operator viewer = loggedOperator.get();
-
-        boolean isAdmin = userDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        if (!isAdmin && !viewer.getId().equals(id)) {
+        if (viewer == null || (!isAdmin && !viewer.getId().equals(id))) {
             return "redirect:/operators/profile";
         }
 
@@ -274,7 +213,6 @@ public class OperatorController {
             redirectAttributes.addFlashAttribute("message", "Profile updated successfully.");
             redirectAttributes.addFlashAttribute("messageClass", "alert-success");
         } catch (Exception e) {
-            e.printStackTrace();
             redirectAttributes.addFlashAttribute("message", "An error occurred while updating.");
             redirectAttributes.addFlashAttribute("messageClass", "alert-danger");
         }
@@ -282,19 +220,13 @@ public class OperatorController {
         return "redirect:/operators/" + id;
     }
 
-    // Elimina un operatore
     @PostMapping("/delete/{id}")
-    public String deleteOperator(@PathVariable Integer id,
-            @AuthenticationPrincipal UserDetails userDetails,
-            RedirectAttributes redirectAttributes) {
-
-        boolean isAdmin = userDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (!isAdmin)
+    public String deleteOperator(@PathVariable Integer id, Model model, RedirectAttributes redirectAttributes) {
+        Boolean isAdmin = (Boolean) model.getAttribute("isAdmin");
+        if (!Boolean.TRUE.equals(isAdmin))
             return "redirect:/operators/profile";
 
         Optional<Operator> operatorOpt = operatorService.getOperatorById(id);
-
         if (operatorOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("message", "Operator not found.");
             redirectAttributes.addFlashAttribute("messageClass", "alert-danger");
@@ -302,7 +234,6 @@ public class OperatorController {
         }
 
         Operator operator = operatorOpt.get();
-
         if (operator.getTickets() != null && !operator.getTickets().isEmpty()) {
             redirectAttributes.addFlashAttribute("message", "Cannot delete operator with assigned tickets.");
             redirectAttributes.addFlashAttribute("messageClass", "alert-danger");

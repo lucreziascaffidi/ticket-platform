@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,7 +17,6 @@ import com.bept4.ticketplatform.model.Note;
 import com.bept4.ticketplatform.model.Operator;
 import com.bept4.ticketplatform.model.Ticket;
 import com.bept4.ticketplatform.service.NoteService;
-import com.bept4.ticketplatform.service.OperatorService;
 import com.bept4.ticketplatform.service.TicketService;
 
 import jakarta.validation.Valid;
@@ -34,9 +31,6 @@ public class NoteController {
     @Autowired
     private TicketService ticketService;
 
-    @Autowired
-    private OperatorService operatorService;
-
     // Aggiunge nota
     @PostMapping("/{ticketId}/note")
     public String addNote(
@@ -44,17 +38,13 @@ public class NoteController {
             @Valid @ModelAttribute("note") Note note,
             BindingResult bindingResult,
             Model model,
-            @AuthenticationPrincipal UserDetails userDetails,
             RedirectAttributes redirectAttributes) {
 
-        if (userDetails == null)
+        Operator loggedOperator = (Operator) model.getAttribute("loggedOperator");
+        if (loggedOperator == null)
             return "redirect:/login";
 
-        Optional<Operator> loggedOperator = operatorService.getOperatorByUsername(userDetails.getUsername());
-        model.addAttribute("loggedOperator", loggedOperator.orElse(null));
-
         Optional<Ticket> ticketOpt = ticketService.getTicketById(ticketId);
-
         if (ticketOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("message", "Ticket not found.");
             redirectAttributes.addFlashAttribute("messageClass", "alert-danger");
@@ -62,6 +52,7 @@ public class NoteController {
         }
 
         Ticket ticket = ticketOpt.get();
+
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("message", "Validation failed for your note.");
             redirectAttributes.addFlashAttribute("messageClass", "alert-danger");
@@ -70,7 +61,7 @@ public class NoteController {
 
         note.setTicket(ticket);
         note.setCreationDate(LocalDateTime.now());
-        loggedOperator.ifPresent(note::setAuthor);
+        note.setAuthor(loggedOperator);
         noteService.saveNote(note);
 
         ticket.setLastModifiedDate(LocalDateTime.now());
@@ -103,5 +94,4 @@ public class NoteController {
 
         return "redirect:/tickets";
     }
-
 }

@@ -60,7 +60,7 @@
 
 
                             <div class="mb-3"
-                                th:if="${loggedUser != null and loggedUser.id == operator.id and canToggleStatus}">
+                                th:if="${loggedOperator != null and loggedOperator.id == operator.id and canToggleStatus}">
                                 <label for="statusSwitch" class="form-label">Status</label>
                                 <div class="form-check form-switch">
                                     <input type="hidden" name="available" value="false" />
