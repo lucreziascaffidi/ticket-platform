@@ -1,6 +1,7 @@
 package com.bept4.ticketplatform.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,14 +18,26 @@ public class NoteService {
     @Autowired
     private NoteRepository noteRepository;
 
-    // Aggiungi una nuova nota a un ticket
     @Transactional
     public Note addNoteToTicket(Note note) {
         return noteRepository.save(note);
     }
 
-    // Ottieni tutte le note per un ticket
     public List<Note> getNotesByTicket(Ticket ticket) {
-        return noteRepository.findByTicket(ticket);
+        return noteRepository.findAll().stream()
+                .filter(n -> n.getTicket().getId().equals(ticket.getId()))
+                .toList();
+    }
+
+    public void saveNote(Note note) {
+        noteRepository.save(note);
+    }
+
+    public Optional<Note> getNoteById(Integer id) {
+        return noteRepository.findById(id);
+    }
+
+    public void deleteNote(Integer id) {
+        noteRepository.deleteById(id);
     }
 }

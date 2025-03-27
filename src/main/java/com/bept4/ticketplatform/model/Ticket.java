@@ -1,7 +1,9 @@
 package com.bept4.ticketplatform.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -9,7 +11,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -28,9 +32,12 @@ public class Ticket {
 
     @NotNull(message = "Description cannot be null")
     @Size(min = 10, max = 500, message = "Description must be between 10 and 500 characters")
+    @Lob
     private String description;
 
     private LocalDateTime creationDate;
+
+    private LocalDateTime lastModifiedDate;
 
     @ManyToOne
     @JoinColumn(name = "operator_id", nullable = false)
@@ -39,8 +46,14 @@ public class Ticket {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    // Getters e Setters
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL)
+    private List<Note> notes;
+
+    // Getters e Setters
     public Integer getId() {
         return this.id;
     }
@@ -89,4 +102,27 @@ public class Ticket {
         this.status = status;
     }
 
+    public List<Note> getNotes() {
+        return notes;
+    }
+
+    public void setNotes(List<Note> notes) {
+        this.notes = notes;
+    }
+
+    public Category getCategory() {
+        return this.category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public LocalDateTime getLastModifiedDate() {
+        return lastModifiedDate;
+    }
+
+    public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
+        this.lastModifiedDate = lastModifiedDate;
+    }
 }

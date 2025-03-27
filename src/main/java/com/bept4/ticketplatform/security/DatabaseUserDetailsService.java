@@ -16,11 +16,9 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Recupera l'operatore dal database
         Operator operator = operatorService.getOperatorByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        // Restituisce un oggetto UserDetails
         return new MyUserDetails(operator);
     }
 }

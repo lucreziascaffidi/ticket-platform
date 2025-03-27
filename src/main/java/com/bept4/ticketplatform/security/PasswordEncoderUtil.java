@@ -4,7 +4,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class PasswordEncoderUtil {
     public static void main(String[] args) {
-        String password = "4567"; // La password che vuoi criptare
+        String password = "3456"; // La password che vuoi criptare
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         String hashedPassword = encoder.encode(password);
 

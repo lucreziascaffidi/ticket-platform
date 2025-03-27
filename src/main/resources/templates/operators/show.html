@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="~{fragments/fragments :: head}"></th:block>
+    <title>Profile</title>
+</head>
+
+<body class="bg-light">
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-lg-2 bg-white p-0 vh-100 overflow-auto sticky-top">
+                <th:block th:replace="~{fragments/fragments :: sidebar('Operators')}"></th:block>
+            </div>
+            <!-- Main Content -->
+            <div class="col col-md-9 col-lg-10 px-4 py-4">
+                <!-- QUI IL CONTENUTO DELLA PAGINA -->
+                <h1 class="mb-4 fw-bold">Operator</h1>
+
+                <div
+                    th:replace="~{fragments/redirect-messages :: redirectMessage(content=${message}, classes=${messageClass})}">
+                </div>
+
+                <!-- OPERATOR CARD -->
+                <div class="card mb-4 shadow-sm border-0">
+                    <div class="card-body d-flex align-items-center">
+                        <img th:src="@{${operator.profileImage != null ? operator.profileImage : '/img/profile/default.png'}}"
+                            class="rounded-circle border border-dark me-4" width="80" height="80" alt="Profile Image">
+                        <div>
+                            <h4 class="mb-1" th:text="${operator.username}">Username</h4>
+                            <p class="mb-2 text-muted" th:text="${operator.email}">email@example.com</p>
+
+                            <!-- STATUS SWITCH -->
+                            <th:block th:if="${loggedOperator.id == operator.id}">
+                                <form th:action="@{/operators/status/update}" method="post" id="statusForm">
+                                    <input type="hidden" name="id" th:value="${operator.id}" />
+                                    <div class="form-check form-switch">
+                                        <input type="checkbox" class="form-check-input" id="availabilitySwitch"
+                                            name="available" value="true" th:checked="${operator.available}"
+                                            th:onclick="${!canToggleStatus and operator.available} ? 'return false;' : null"
+                                            onchange="this.form.submit()" />
+                                        <label class="form-check-label" for="availabilitySwitch"
+                                            th:text="${operator.available ? 'Active' : 'Inactive'}"></label>
+                                    </div>
+                                    <div th:if="${!canToggleStatus and operator.available}"
+                                        class="text-danger mt-1 small">
+                                        You can’t deactivate yourself while you have active tickets.
+                                    </div>
+                                </form>
+                            </th:block>
+                            <th:block th:if="${loggedOperator.id == operator.id or isAdmin}">
+                                <a th:href="@{/operators/edit/{id}(id=${operator.id})}"
+                                    class="btn btn-sm btn-outline-dark mt-3" title="Edit Profile">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ASSIGNED TICKETS -->
+                <h5 class="mb-3">Assigned Tickets</h5>
+
+                <!-- Se non ci sono ticket -->
+                <div th:if="${#lists.isEmpty(assignedTickets)}" class="alert alert-info">
+                    No tickets assigned yet.
+                </div>
+
+                <!-- Se ci sono ticket -->
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3"
+                    th:if="${!#lists.isEmpty(assignedTickets)}">
+                    <div class="col" th:each="ticket : ${assignedTickets}">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body">
+                                <h6 class="card-title mb-2" th:text="${ticket.title}">Ticket Title</h6>
+
+                                <span class="badge mb-2" th:classappend="${ticket.status.name() == 'TO_DO' ? 'bg-warning text-white' : 
+                                    ticket.status.name() == 'IN_PROGRESS' ? 'bg-info' : 
+                                    'bg-success'}" th:text="${ticket.status}">Status</span>
+
+                                <div class="mb-3">
+                                    <span class="badge" th:classappend="${ticket.category.name == 'Installation' ? 'bg-primary' :
+                                        ticket.category.name == 'Damage' ? 'bg-danger' :
+                                        ticket.category.name == 'Update' ? 'bg-info text-dark' :
+                                        ticket.category.name == 'Security' ? 'bg-warning text-dark' :
+                                        ticket.category.name == 'Performance' ? 'bg-success' : 'bg-secondary'}"
+                                        th:text="${ticket.category.name}">Category</span>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <a th:href="@{/tickets/show/{id}(id=${ticket.id})}"
+                                        class="btn btn-sm btn-outline-dark">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <th:block th:replace="~{fragments/fragments :: logout-modal}"></th:block>
+
+    <th:block th:replace="~{fragments/fragments :: scripts}"></th:block>
+</body>
+
+</html>

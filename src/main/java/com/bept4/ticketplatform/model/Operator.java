@@ -1,7 +1,9 @@
 package com.bept4.ticketplatform.model;
 
+import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -32,19 +34,21 @@ public class Operator {
     @Email(message = "Email should be valid")
     private String email;
 
-    private boolean personalStatus;
+    @Column(name = "is_available")
+    private boolean available;
 
     @NotNull(message = "Password cannot be null")
     private String password;
 
+    @Size(max = 255, message = "Profile image path must be less than 255 characters")
     private String profileImage;
 
-    @OneToMany(mappedBy = "operator")
+    @OneToMany(mappedBy = "operator", fetch = FetchType.EAGER)
     private Set<Ticket> tickets;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "operator_roles", joinColumns = @JoinColumn(name = "operator_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Roles> roles;
+    @JoinTable(name = "operator_role", joinColumns = @JoinColumn(name = "operator_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
 
     public void setTickets(Set<Ticket> tickets) {
         this.tickets = tickets;
@@ -75,12 +79,12 @@ public class Operator {
         this.email = email;
     }
 
-    public boolean isPersonalStatus() {
-        return this.personalStatus;
+    public boolean isAvailable() {
+        return this.available;
     }
 
-    public void setPersonalStatus(boolean personalStatus) {
-        this.personalStatus = personalStatus;
+    public void setAvailable(boolean avaiable) {
+        this.available = avaiable;
     }
 
     public String getPassword() {
@@ -95,11 +99,11 @@ public class Operator {
         return this.tickets;
     }
 
-    public Set<Roles> getRoles() {
+    public Set<Role> getRoles() {
         return this.roles;
     }
 
-    public void setRoles(Set<Roles> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 
@@ -109,6 +113,11 @@ public class Operator {
 
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    @Override
+    public String toString() {
+        return "Operator{id=" + id + ", username='" + username + "', email='" + email + "'}";
     }
 
 }

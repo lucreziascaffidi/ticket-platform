@@ -25,35 +25,24 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return operator.getPassword(); // Restituisce la password cifrata dell'operatore
+        return operator.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return operator.getUsername(); // Restituisce il nome utente
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true; // Puoi modificare questa logica se desideri
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true; // Puoi modificare questa logica se desideri
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true; // Puoi modificare questa logica se desideri
+        return operator.getUsername();
     }
 
     @Override
     public boolean isEnabled() {
-        return operator.isPersonalStatus(); // Puoi personalizzare questa logica (ad esempio per il "non disponibile")
+        return true;
     }
 
     public Operator getOperator() {
         return operator;
+    }
+
+    public String getProfileImage() {
+        return operator != null ? operator.getProfileImage() : "/img/profile/default.png";
     }
 }

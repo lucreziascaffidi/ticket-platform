@@ -28,6 +28,9 @@ public class Note {
     @ManyToOne
     private Ticket ticket;
 
+    @ManyToOne
+    private Operator author;
+
     // Getters and Setters
     public Integer getId() {
         return this.id;
@@ -61,4 +64,11 @@ public class Note {
         this.ticket = ticket;
     }
 
+    public Operator getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(Operator author) {
+        this.author = author;
+    }
 }

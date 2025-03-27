@@ -2,25 +2,139 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <title>Home</title>
     <th:block th:replace="~{fragments/fragments :: head}"></th:block>
+    <title>Home</title>
 </head>
 
 <body class="bg-light">
-    <div class="d-flex">
-        <th:block th:replace="~{fragments/fragments :: sidebar('Home')}"></th:block>
 
-    </div>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-lg-2 bg-white p-0 vh-100 overflow-auto sticky-top">
+                <th:block th:replace="~{fragments/fragments :: sidebar('Home')}"></th:block>
+            </div>
 
-    <div class="d-flex justify-content-center align-items-center vh-100">
-        <div class="text-center">
-            <h2>Welcome, <span th:text="${operator.username}">Username</span>!</h2>
-            <p>You are successfully logged in!</p>
-            <a href="/logout" class="btn btn-dark">Logout</a>
+            <!-- Main Content -->
+            <div class="col col-md-9 col-lg-10 px-4 py-4">
+                <h1 th:text="'Benvenuto, ' + ${loggedUser.username} + '!'"></h1>
+                <div class="alert alert-success alert-dismissible fade show mt-3" th:if="${successMessage}"
+                    role="alert">
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <!-- Admin Section -->
+                <div th:if="${isAdmin}">
+                    <h2 class="mt-4">Dashboard Admin</h2>
+                    <p class="text-muted">Here is a summary of your team's activity.</p>
+                    <div class="row row-cols-1 row-cols-md-4 g-4 mt-2">
+                        <!-- Totale Ticket -->
+                        <div class="col">
+                            <div class="card border-0 shadow-sm bg-white">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 text-dark mb-2"><i class="bi bi-collection"></i></div>
+                                    <h6 class="text-muted">Total Ticket</h6>
+                                    <p class="fs-3 fw-bold text-dark mb-0" th:text="${totalTickets}">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- To-Do -->
+                        <div class="col">
+                            <div class="card border-0 shadow-sm bg-white">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 text-warning mb-2"><i class="bi bi-list-task"></i></div>
+                                    <h6 class="text-muted">In To-Do</h6>
+                                    <p class="fs-3 fw-bold text-warning mb-0" th:text="${toDoTickets}">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- In Progress -->
+                        <div class="col">
+                            <div class="card border-0 shadow-sm bg-white">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 text-info mb-2"><i class="bi bi-hourglass-split"></i></div>
+                                    <h6 class="text-muted">In Progress</h6>
+                                    <p class="fs-3 fw-bold text-info mb-0" th:text="${inProgressTickets}">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Completati -->
+                        <div class="col">
+                            <div class="card border-0 shadow-sm bg-white">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 text-success mb-2"><i class="bi bi-check-circle"></i></div>
+                                    <h6 class="text-muted">Completed</h6>
+                                    <p class="fs-3 fw-bold text-success mb-0" th:text="${doneTickets}">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Section -->
+                <div th:unless="${isAdmin}">
+                    <h2 class="mt-4">Dashboard Utente</h2>
+                    <p class="text-muted">Here is a summary of your activity.</p>
+
+                    <div class="row row-cols-1 row-cols-md-4 g-4 mt-2">
+                        <!-- I tuoi Ticket -->
+                        <div class="col">
+                            <div class="card border-0 shadow-sm bg-white">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 text-dark mb-2"><i class="bi bi-collection"></i></div>
+                                    <h6 class="text-muted">Your ticket</h6>
+                                    <p class="fs-3 fw-bold text-dark mb-0" th:text="${totalTickets}">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- To-Do -->
+                        <div class="col">
+                            <div class="card border-0 shadow-sm bg-white">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 text-warning mb-2"><i class="bi bi-list-task"></i></div>
+                                    <h6 class="text-muted">In To-Do</h6>
+                                    <p class="fs-3 fw-bold text-warning mb-0" th:text="${toDoTickets}">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- In Progress -->
+                        <div class="col">
+                            <div class="card border-0 shadow-sm bg-white">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 text-info mb-2"><i class="bi bi-hourglass-split"></i></div>
+                                    <h6 class="text-muted">In Progress</h6>
+                                    <p class="fs-3 fw-bold text-info mb-0" th:text="${inProgressTickets}">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Completati -->
+                        <div class="col">
+                            <div class="card border-0 shadow-sm bg-white">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 text-success mb-2"><i class="bi bi-check-circle"></i></div>
+                                    <h6 class="text-muted">Completed</h6>
+                                    <p class="fs-3 fw-bold text-success mb-0" th:text="${doneTickets}">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
         </div>
     </div>
 
+    <th:block th:replace="~{fragments/fragments :: logout-modal}"></th:block>
     <th:block th:replace="~{fragments/fragments :: scripts}"></th:block>
+
 </body>
 
 </html>

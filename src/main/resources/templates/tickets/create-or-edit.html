@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="~{fragments/fragments :: head}"></th:block>
+    <title>Tickets</title>
+</head>
+
+<body class="bg-light">
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-lg-2 bg-white p-0 vh-100 overflow-auto sticky-top">
+                <th:block th:replace="~{fragments/fragments :: sidebar('Tickets')}"></th:block>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col col-md-9 col-lg-10 px-4 py-4">
+                <!-- Header -->
+                <header th:object="${ticket}">
+                    <h1 class="mb-4 fw-bold" th:if="${create}">Create New Ticket</h1>
+                    <h1 class="mb-4 fw-bold" th:unless="${create}">Edit Ticket "[[${ticket.title}]]"</h1>
+                </header>
+
+                <!-- Flash messages -->
+                <div
+                    th:replace="~{fragments/redirect-messages :: redirectMessage(content=${message}, classes=${messageClass})}">
+                </div>
+
+                <!-- Form Container -->
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <form th:action="@{${create} ? '/tickets/create' : '/tickets/edit/' + ${ticket.id}}"
+                            method="post" th:object="${ticket}">
+
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title:</label>
+                                <input type="text" class="form-control" id="title" th:field="*{title}" required>
+                                <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}"
+                                    class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category:</label>
+                                <select class="form-select" id="category" th:field="*{category}" required>
+                                    <option value="">Select Category</option>
+                                    <option th:each="category : ${categories}" th:value="${category.id}"
+                                        th:text="${category.name}"></option>
+                                </select>
+                                <span th:if="${#fields.hasErrors('category')}" th:errors="*{category}"
+                                    class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="operator" class="form-label">Operator:</label>
+                                <select class="form-select" id="operator" name="operator.id" required>
+                                    <option value="">Select Operator</option>
+                                    <th:block th:each="op : ${operators}">
+                                        <option th:value="${op.id}"
+                                            th:text="${op.username + (!op.available ? ' (Not available)' : '')}"
+                                            th:disabled="${!op.available}"
+                                            th:selected="${ticket.operator != null and ticket.operator.id == op.id}">
+                                        </option>
+                                    </th:block>
+                                </select>
+                                <span th:if="${#fields.hasErrors('operator')}" th:errors="*{operator}"
+                                    class="text-danger"></span>
+                            </div>
+
+                            <th:block th:unless="${create}">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status:</label>
+                                    <select class="form-select" id="status" name="statusId" th:field="*{status}"
+                                        required>
+                                        <option value="">Select Status</option>
+                                        <option value="TO_DO">To Do</option>
+                                        <option value="IN_PROGRESS">In Progress</option>
+                                        <option value="COMPLETED">Completed</option>
+                                    </select>
+                                    <span th:if="${#fields.hasErrors('status')}" th:errors="*{status}"
+                                        class="text-danger"></span>
+                                </div>
+                            </th:block>
+
+                            <div class="mb-4">
+                                <label for="description" class="form-label">Description:</label>
+                                <textarea class="form-control" id="description" th:field="*{description}"
+                                    rows="3"></textarea>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button type="submit" class="btn btn-dark">Save</button>
+
+                                <!-- Delete (only in edit mode and if admin) -->
+                                <th:block th:if="${!create}">
+                                    <button sec:authorize="hasRole('ADMIN')" type="button" class="btn btn-danger"
+                                        data-bs-toggle="modal" th:data-bs-target="'#delete-modal-' + ${ticket.id}">
+                                        Delete
+                                    </button>
+                                </th:block>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Delete Modal -->
+                <th:block th:if="${!create}">
+                    <div class="modal fade" th:id="'delete-modal-' + ${ticket.id}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Confirm Deletion</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete this ticket?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cancel</button>
+                                    <form th:action="@{/tickets/delete/{id}(id=${ticket.id})}" method="post">
+                                        <button type="submit" class="btn btn-danger">Delete Permanently</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>
+            </div>
+        </div>
+    </div>
+    <th:block th:replace="~{fragments/fragments :: logout-modal}"></th:block>
+
+    <th:block th:replace="~{fragments/fragments :: scripts}"></th:block>
+</body>
+
+</html>

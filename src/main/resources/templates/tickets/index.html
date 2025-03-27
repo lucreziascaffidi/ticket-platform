@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="~{fragments/fragments :: head}"></th:block>
+    <title>Tickets</title>
+</head>
+
+<body class="bg-light">
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-lg-2 bg-white p-0 vh-100 overflow-auto sticky-top">
+                <th:block th:replace="~{fragments/fragments :: sidebar('Tickets')}"></th:block>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col col-md-9 col-lg-10 px-4 py-4 h-100">
+
+                <h1 class="mb-4 fw-bold">Ticket Management</h1>
+
+                <!-- Flash messages -->
+                <div
+                    th:replace="~{fragments/redirect-messages :: redirectMessage(content=${message}, classes=${messageClass})}">
+                </div>
+
+                <!-- Ticket Search -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-bottom">
+                        <strong>Search Filters</strong>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/tickets/search}" method="get">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="title" class="form-label">Title</label>
+                                    <input type="text" class="form-control" id="title" name="title" th:value="${title}"
+                                        placeholder="Enter ticket title">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="">Select Status</option>
+                                        <option value="TO_DO" th:selected="${status == 'TO_DO'}">To Do</option>
+                                        <option value="IN_PROGRESS" th:selected="${status == 'IN_PROGRESS'}">In Progress
+                                        </option>
+                                        <option value="COMPLETED" th:selected="${status == 'COMPLETED'}">Completed
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="category" class="form-label">Category</label>
+                                    <select class="form-select" id="category" name="categoryId">
+                                        <option value="">Select Category</option>
+                                        <th:block th:each="category : ${categories}">
+                                            <option th:value="${category.id}" th:text="${category.name}"
+                                                th:selected="${categoryId == category.id}"></option>
+                                        </th:block>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-outline-dark">
+                                    <i class="bi bi-search me-1"></i> Search
+                                </button>
+                                <a th:href="@{/tickets}" class="btn btn-secondary">Reset</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Ticket List -->
+                <div class="text-end mb-3" sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/tickets/create}" class="btn btn-dark d-inline-flex align-items-center">
+                        <i class="bi bi-plus-circle me-1"></i> Add Ticket
+                    </a>
+                </div>
+
+                <div th:if="${#lists.isEmpty(tickets)}" class="alert alert-warning mt-4" role="alert">
+                    No tickets available.
+                </div>
+
+
+                <div th:if="${not #lists.isEmpty(tickets)}" class="card shadow-sm border-0 mt-4">
+                    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                        <strong>Tickets List</strong>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Title</th>
+                                        <th>Status</th>
+                                        <th sec:authorize="hasRole('ADMIN')">Operator</th>
+                                        <th>Category</th>
+                                        <th>Created</th>
+                                        <th class="text-center" colspan="3"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <th:block th:each="ticket : ${tickets}">
+                                        <tr>
+                                            <td th:text="${ticket.id}"></td>
+                                            <td th:text="${ticket.title}"></td>
+                                            <td>
+                                                <span class="badge" th:classappend="${ticket.status.badgeClass}"
+                                                    th:text="${ticket.status.label}"></span>
+                                            </td>
+                                            <td sec:authorize="hasRole('ADMIN')">
+                                                <div class="d-flex align-items-center">
+                                                    <img th:src="@{${ticket.operator.profileImage != null ? ticket.operator.profileImage : '/img/profile/default.png'}}"
+                                                        alt="Profile" class="rounded-circle me-2" width="30"
+                                                        height="30">
+                                                    <span th:text="${ticket.operator.username}">Username</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge"
+                                                    th:classappend="${ticket.category.name == 'Installation' ? 'bg-primary' :
+                                                                    (ticket.category.name == 'Damage' ? 'bg-danger' :
+                                                                    (ticket.category.name == 'Update' ? 'bg-info text-dark' :
+                                                                    (ticket.category.name == 'Security' ? 'bg-warning text-dark' :
+                                                                    (ticket.category.name == 'Performance' ? 'bg-success' : 'bg-secondary'))))}"
+                                                    th:text="${ticket.category.name}">Category</span>
+                                            </td>
+                                            <td
+                                                th:text="${#temporals.format(ticket.creationDate, 'dd/MM/yyyy - HH:mm')}">
+                                            </td>
+
+                                            <td class="allign-center">
+                                                <a th:href="@{/tickets/show/{id}(id=${ticket.id})}"
+                                                    class="btn btn-outline-dark btn-sm d-flex align-items-center justify-content-center p-0"
+                                                    style="width: 35px; height: 35px;" title="View">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                                                        <path
+                                                            d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                                                    </svg>
+                                                </a>
+                                            </td>
+
+                                            <td class="allign-center">
+                                                <a sec:authorize="hasRole('ADMIN')"
+                                                    th:href="@{/tickets/edit/{id}(id=${ticket.id})}"
+                                                    class="btn btn-sm btn-outline-dark d-flex align-items-center justify-content-center p-0"
+                                                    style="width: 35px; height: 35px;" title="Edit">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-pencil-fill"
+                                                        viewBox="0 0 16 16">
+                                                        <path
+                                                            d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z" />
+                                                    </svg>
+                                                </a>
+                                            </td>
+
+                                            <!-- Delete modal -->
+                                            <td class="allign-center">
+                                                <button sec:authorize="hasRole('ADMIN')" type="button"
+                                                    class="btn btn-outline-dark btn-sm d-flex align-items-center justify-content-center p-0"
+                                                    style="width: 35px; height: 35px;" title="Delete"
+                                                    data-bs-toggle="modal"
+                                                    th:data-bs-target="'#delete-modal-' + ${ticket.id}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        fill="currentColor" class="bi bi-trash3-fill"
+                                                        viewBox="0 0 16 16">
+                                                        <path
+                                                            d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                                    </svg>
+                                                </button>
+
+                                                <!-- Modal conferma -->
+                                                <div class="modal fade" th:id="'delete-modal-' + ${ticket.id}"
+                                                    tabindex="-1">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Deleting [[${ticket.title}]]
+                                                                </h5>
+                                                                <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                Are you sure you want to delete "[[${ticket.title}]]"
+                                                                (ID:
+                                                                [[${ticket.id}]])?
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                    data-bs-dismiss="modal">Close</button>
+                                                                <form
+                                                                    th:action="@{/tickets/delete/{id}(id=${ticket.id})}"
+                                                                    method="post">
+                                                                    <button type="submit" class="btn btn-danger">Delete
+                                                                        permanently</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </th:block>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block th:replace="~{fragments/fragments :: logout-modal}"></th:block>
+
+    <th:block th:replace="~{fragments/fragments :: scripts}"></th:block>
+</body>
+
+</html>

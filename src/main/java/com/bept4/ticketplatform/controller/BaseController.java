@@ -18,16 +18,17 @@ public class BaseController {
     @Autowired
     private OperatorService operatorService;
 
-    // Metodo per aggiungere l'operatore al modello per ogni richiesta
     @ModelAttribute
-    protected void addOperatorToModel(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-        String username = userDetails.getUsername();
-        Optional<Operator> operator = operatorService.getOperatorByUsername(username);
-
-        if (operator.isPresent()) {
-            model.addAttribute("operator", operator.get());
-            model.addAttribute("profileImage", operator.get().getProfileImage());
+    public void addLoggedUserToModel(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails != null) {
+            Optional<Operator> operator = operatorService.getOperatorByUsername(userDetails.getUsername());
+            if (operator.isPresent()) {
+                model.addAttribute("loggedUser", operator.get());
+                model.addAttribute("profileImage", operator.get().getProfileImage());
+            }
+        } else {
+            model.addAttribute("loggedUser", null);
+            model.addAttribute("profileImage", null);
         }
     }
-
 }

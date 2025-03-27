@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="~{fragments/fragments :: head}"></th:block>
+    <title>Ticket Details</title>
+</head>
+
+<body class="bg-light">
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-lg-2 bg-white p-0 vh-100 overflow-auto sticky-top">
+                <th:block th:replace="~{fragments/fragments :: sidebar('Tickets')}"></th:block>
+            </div>
+
+            <!-- Main Content -->
+            <main class="col col-md-9 col-lg-10 px-4 py-4">
+                <h1 class="mb-4 fw-bold">Ticket Details</h1>
+
+                <div
+                    th:replace="~{fragments/redirect-messages :: redirectMessage(content=${message}, classes=${messageClass})}">
+                </div>
+
+                <div class="row g-4">
+                    <section class="col-lg-5">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <!-- Title -->
+                                <h5 class="card-title mb-3 fw-bold" th:text="${ticket.title}">Ticket Title</h5>
+
+                                <p th:text="${ticket.description}">Ticket Description</p>
+
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center gap-2 mt-1">
+                                        <span class="badge"
+                                            th:classappend="${ticket.status.name() == 'TO_DO' ? 'text-bg-warning' :
+                                                            (ticket.status.name() == 'IN_PROGRESS' ? 'text-bg-warning' :
+                                                            (ticket.status.name() == 'COMPLETED' ? 'text-bg-success' : 'text-bg-dark'))}"
+                                            th:text="${ticket.status}">
+                                        </span>
+                                        <button class="btn btn-sm btn-outline-dark" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#statusCollapse"
+                                            aria-expanded="false" aria-controls="statusCollapse" title="Edit Status">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="collapse mt-2" id="statusCollapse">
+                                        <form th:action="@{'/tickets/' + ${ticket.id} + '/update-status'}"
+                                            method="post">
+                                            <div class="d-flex align-items-center gap-2 mt-2">
+                                                <select class="form-select form-select-sm w-auto" name="status"
+                                                    required>
+                                                    <option value="TO_DO"
+                                                        th:selected="${ticket.status.name() == 'TO_DO'}">To Do</option>
+                                                    <option value="IN_PROGRESS"
+                                                        th:selected="${ticket.status.name() == 'IN_PROGRESS'}">In
+                                                        Progress</option>
+                                                    <option value="COMPLETED"
+                                                        th:selected="${ticket.status.name() == 'COMPLETED'}">Completed
+                                                    </option>
+                                                </select>
+                                                <button type="submit" class="btn btn-sm btn-dark">Update</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <span class="badge"
+                                        th:classappend="${ticket.category.name == 'Installation' ? 'bg-primary' :
+                                                            (ticket.category.name == 'Damage' ? 'bg-danger' :
+                                                            (ticket.category.name == 'Update' ? 'bg-info text-dark' :
+                                                            (ticket.category.name == 'Security' ? 'bg-warning text-dark' :
+                                                            (ticket.category.name == 'Performance' ? 'bg-success' : 'bg-secondary'))))}"
+                                        th:text="${ticket.category.name}">Category</span>
+                                </div>
+
+                                <div class="text-muted small mt-3">
+                                    <p class="mb-1">Created on:<span
+                                            th:text="${#temporals.format(ticket.creationDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </p>
+                                    <p class="mb-3">Last Modified:<span
+                                            th:text="${#temporals.format(ticket.lastModifiedDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </p>
+                                </div>
+
+                                <div class="mb-1">
+                                    <div class="d-flex align-items-center mt-1">
+                                        <img th:src="@{${ticket.operator.profileImage != null ? ticket.operator.profileImage : '/img/profile/default.png'}}"
+                                            class="rounded-circle border border-dark me-2" width="40" height="40"
+                                            alt="image-profile">
+                                        <span th:text="${ticket.operator.username}">Operator Name</span>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 d-flex gap-2" sec:authorize="hasRole('ADMIN')">
+                                    <a th:href="@{/tickets/edit/{id}(id=${ticket.id})}"
+                                        class="btn btn-outline-dark btn-sm">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
+                                    <form th:action="@{/tickets/delete/{id}(id=${ticket.id})}" method="post"
+                                        class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-archive"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <a th:href="@{/tickets}" class="btn btn-outline-secondary btn-sm">← Back to Tickets</a>
+                        </div>
+                    </section>
+
+                    <section class="col-lg-7">
+                        <th:block sec:authorize="hasRole('USER')">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Add Note</h5>
+                                    <button class="btn btn-sm btn-dark d-inline-flex align-items-center" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#noteForm"
+                                        style="width: 35px; height: 35px;">
+                                        <i class="bi bi-plus-circle"></i>
+                                    </button>
+                                </div>
+                                <div class="collapse" id="noteForm">
+                                    <div class="card-body">
+                                        <form th:action="@{/tickets/{id}/note(id=${ticket.id})}" method="post"
+                                            th:object="${note}">
+                                            <div class="mb-3">
+                                                <label for="content" class="form-label">Your Note</label>
+                                                <textarea class="form-control" th:field="*{content}" rows="3"
+                                                    placeholder="Enter your note" required></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-dark">Submit</button>
+                                            <button type="button" class="btn btn-outline-secondary"
+                                                data-bs-toggle="collapse" data-bs-target="#noteForm">Cancel</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </th:block>
+
+                        <div th:if="${ticket.notes == null or #lists.isEmpty(ticket.notes)}"
+                            class="alert alert-warning">
+                            No notes yet.
+                        </div>
+
+                        <div th:if="${ticket.notes != null and !#lists.isEmpty(ticket.notes)}">
+                            <h4 class="fw-semibold mb-3">Notes</h4>
+                            <div th:each="note : ${ticket.notes}" class="card shadow-sm mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <strong
+                                                th:text="${note.author != null ? note.author.username : 'Unknown'}"></strong>
+                                            <span class="text-muted ms-2"
+                                                th:text="${#temporals.format(note.creationDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                        </div>
+                                        <form th:action="@{/tickets/notes/delete/{id}(id=${note.id})}" method="post"
+                                            class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <p th:text="${note.content}">Note content</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+
+            </main>
+        </div>
+    </div>
+
+    <th:block th:replace="~{fragments/fragments :: logout-modal}"></th:block>
+
+    <th:block th:replace="~{fragments/fragments :: scripts}"></th:block>
+</body>
+
+</html>

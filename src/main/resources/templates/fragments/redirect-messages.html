@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages</title>
+</head>
+
+<body>
+
+    <th:block th:fragment="redirectMessage(content, classes)" th:unless="${content == null && classes == null}">
+        <div class="alert alert-dismissible fade show" th:classappend="${classes}" role="alert">
+            <p class="my-auto" th:text="${content}"></p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </th:block>
+
+</body>
+
+</html>
